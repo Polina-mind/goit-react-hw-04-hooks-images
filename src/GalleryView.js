@@ -19,8 +19,6 @@ function GalleryView({ openModal }) {
   }, [query]);
 
   const onChangeQuery = searchQuery => {
-    console.log(searchQuery);
-
     setQuery(searchQuery);
     setCurrentPage(1);
     setGallery([]);
