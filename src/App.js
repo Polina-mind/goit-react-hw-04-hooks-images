@@ -1,43 +1,35 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import Container from './components/Container';
 import Modal from './components/Modal';
 import GalleryView from './GalleryView';
 import './App.css';
 
-class App extends Component {
-  state = {
-    showModal: false,
-    largeImageURL: '',
-  };
+function App() {
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
-  openModal = event => {
+  const openModal = event => {
     const largeImageUrl = event.target.dataset.source;
-    this.setState({ largeImageURL: largeImageUrl });
+    setLargeImageURL(largeImageUrl);
 
-    this.toggleModal();
+    toggleModal();
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
+  const toggleModal = () => {
+    setShowModal(!showModal);
   };
 
-  render() {
-    const { showModal } = this.state;
+  return (
+    <Container>
+      <GalleryView openModal={openModal}></GalleryView>
 
-    return (
-      <Container>
-        <GalleryView openModal={this.openModal}></GalleryView>
-
-        {showModal && (
-          <Modal onClick={this.openModal} onClose={this.toggleModal}>
-            <img src={this.state.largeImageURL} alt="" />
-          </Modal>
-        )}
-      </Container>
-    );
-  }
+      {showModal && (
+        <Modal onClick={openModal} onClose={toggleModal}>
+          <img src={largeImageURL} alt="" />
+        </Modal>
+      )}
+    </Container>
+  );
 }
 
 export default App;

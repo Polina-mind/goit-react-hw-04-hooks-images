@@ -1,55 +1,42 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
 import Button from './components/Button';
 import FetchGallery from './galleryApi';
 
-class GalleryView extends Component {
-  static propTypes = {
-    openModal: PropTypes.func.isRequired,
-  };
+function GalleryView({ openModal }) {
+  const [query, setQuery] = useState('');
+  const [gallery, setGallery] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  state = {
-    query: '',
-    gallery: [],
-    currentPage: 1,
-    searchQuery: '',
-    isLoading: false,
-    error: null,
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.searchQuery !== this.state.searchQuery) {
-      this.fetchGallery();
+  useEffect(() => {
+    if (query !== '') {
+      fetchGallery();
     }
-  }
+  }, [query]);
 
-  onChangeQuery = query => {
-    this.setState({
-      searchQuery: query,
-      currentPage: 1,
-      gallery: [],
-      error: null,
-      largeImageURL: '',
-    });
+  const onChangeQuery = searchQuery => {
+    console.log(searchQuery);
+
+    setQuery(searchQuery);
+    setCurrentPage(1);
+    setGallery([]);
+    setError(null);
   };
 
-  fetchGallery = () => {
-    const { currentPage, searchQuery } = this.state;
-    const options = { searchQuery, currentPage };
+  const fetchGallery = () => {
+    setIsLoading(true);
 
-    this.setState({ isLoading: true });
-
-    FetchGallery(options)
-      .then(gallery => {
-        this.setState(prevState => ({
-          gallery: [...prevState.gallery, ...gallery],
-          currentPage: prevState.currentPage + 1,
-        }));
+    FetchGallery(query, currentPage)
+      .then(addGallery => {
+        setGallery([...gallery, ...addGallery]);
+        setCurrentPage(currentPage + 1);
       })
-      .catch(error => this.setState({ error }))
-      .finally(() => this.setState({ isLoading: false }))
+      .catch(error => setError(error))
+      .finally(() => setIsLoading(false))
       .finally(() => {
         window.scrollTo({
           top: document.documentElement.scrollHeight,
@@ -58,24 +45,21 @@ class GalleryView extends Component {
       });
   };
 
-  render() {
-    const { gallery, isLoading, error } = this.state;
+  return (
+    <div>
+      {error && <h1>Error!</h1>}
+      <Searchbar onSubmit={onChangeQuery} />
 
-    return (
-      <div>
-        {error && <h1>Error!</h1>}
-        <Searchbar onSubmit={this.onChangeQuery} />
+      <ImageGallery gallery={gallery} onClick={openModal}></ImageGallery>
 
-        <ImageGallery
-          gallery={gallery}
-          onClick={this.props.openModal}
-        ></ImageGallery>
-
-        {isLoading && <p>Loading...</p>}
-        {gallery.length > 0 && <Button onClick={this.fetchGallery}></Button>}
-      </div>
-    );
-  }
+      {isLoading && <p>Loading...</p>}
+      {gallery.length > 0 && <Button onClick={fetchGallery}></Button>}
+    </div>
+  );
 }
+
+GalleryView.propTypes = {
+  openModal: PropTypes.func.isRequired,
+};
 
 export default GalleryView;
