@@ -16,6 +16,10 @@ function GalleryView({ openModal }) {
     if (query !== '') {
       fetchGallery();
     }
+
+    return () => {
+      // сделать отмену фетча, чтобы не было утечки памяти
+    };
   }, [query]);
 
   const onChangeQuery = searchQuery => {
@@ -30,7 +34,7 @@ function GalleryView({ openModal }) {
 
     FetchGallery(query, currentPage)
       .then(addGallery => {
-        setGallery([...gallery, ...addGallery]);
+        setGallery(prevGallery => [...prevGallery, ...addGallery]);
         setCurrentPage(currentPage + 1);
       })
       .catch(error => setError(error))
